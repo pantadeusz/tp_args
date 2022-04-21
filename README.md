@@ -4,6 +4,10 @@ Header only argument parsing library for c++17 with automatic type and type conv
 
 ## Example usage
 
+```bash
+wget https://raw.githubusercontent.com/pantadeusz/tp_args/87d75f26493cb06ae5688ba5206e0d618a808367/tp_args.hpp
+```
+
 Code sample:
 
 ```c++
