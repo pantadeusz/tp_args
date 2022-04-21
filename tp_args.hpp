@@ -11,9 +11,11 @@
  *
  * The types are allowed for arguments:
  * @code {.c++ }
-auto arguments = parse_arguments(argc, argv, {{"height","int"}});
-auto height = arg(arguments, "height",0);
+ * auto arguments = parse_arguments(argc, argv, {{"height","int"}});
+ * auto height = arg(arguments, "height",0);
  * @endcode
+ * 
+ * You can enable output stream for std::any by declaring TP_ARGS_ENABLE_OSTREAM_ANY before including this file
  */
 #ifndef __TP_ARGS_HPP____
 #define __TP_ARGS_HPP____
@@ -22,7 +24,6 @@ auto height = arg(arguments, "height",0);
 #include <string>
 #include <any>
 #include <iostream>
-#include <vector>
 
 /**
  * @brief It is in the namespace tp::args and provides just two methods - parse_arguments, and arg
@@ -68,5 +69,26 @@ auto arg = [](auto arguments, auto arg_name, auto defaultval)
     return (arguments.count(arg_name))?any_cast<decltype(defaultval)>(arguments.at(arg_name)):defaultval;
 };
 }
+
+#ifdef TP_ARGS_ENABLE_OSTREAM_ANY
+std::ostream &operator<<(std::ostream &o, std::any value) {
+    using namespace std;
+
+    if (value.type() == typeid(int)) {
+        o << any_cast<int>(value);
+    } else if (value.type() == typeid(float)) {
+        o << any_cast<float>(value);
+    } else if (value.type() == typeid(double)) {
+        o << any_cast<double>(value);
+    } else if (value.type() == typeid(unsigned)) {
+        o << any_cast<unsigned>(value);
+    } else if (value.type() == typeid(bool)) {
+        o << (any_cast<bool>(value)?"true":"false");
+    } else if (value.type() == typeid(string)) {
+        o << any_cast<string>(value);
+    } else o << "<<UNKNOWN_TYPE>>";
+    return o;
+}
+#endif
 
 #endif
