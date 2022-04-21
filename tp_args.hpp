@@ -4,12 +4,12 @@
  * @brief Simple header only arguments parsing library.
  * @version 0.1
  * @date 2022-04-21
- * 
+ *
  * @copyright Copyright (c) 2022
- * 
+ *
  * This library allows for simple parsing arguments in the format: argname=argvalue. It only checks the first equal sign. For example: ./a.out myarg=itsvalue
- * 
- * The types are allowed for arguments: 
+ *
+ * The types are allowed for arguments:
  * @code {.c++ }
 auto arguments = parse_arguments(argc, argv, {{"height","int"}});
 auto height = arg(arguments, "height",0);
@@ -30,15 +30,11 @@ auto height = arg(arguments, "height",0);
 
 namespace tp::args
 {
-    /**
-     * @brief prepares arguments map.
-     */
+/**
+ * @brief prepares arguments map.
+ */
 auto parse_arguments = [](int argc, char **argv,
-                          const std::map<std::string,std::string> value_types,
-                          std::function<void(std::string argname, std::string argvalue)> on_unknown_arg = [](std::string argname, std::string argvalue) ->void
-{
-    std::cerr << "WARN: unknown argument or bad type for \"" << argname << "\" with value \"" << argvalue  << "\"" << std::endl;
-} ) -> std::map<std::string,std::any> {
+const std::map<std::string,std::string> value_types ) -> std::map<std::string,std::any> {
     using namespace std;
     map<string,any> ret;
     for (auto s : std::vector<std::string>(argv+1,argv+argc))
@@ -56,7 +52,7 @@ auto parse_arguments = [](int argc, char **argv,
             else ret[k] = v;
         } catch (std::out_of_range &e) {
             ret[k] = v;
-            on_unknown_arg(k,v);
+            std::cerr << "WARN: unknown argument or bad type for \"" << k << "\" with value \"" << v  << "\"" << std::endl;
         }
     }
     return ret;
