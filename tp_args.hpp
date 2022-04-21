@@ -22,6 +22,7 @@ auto height = arg(arguments, "height",0);
 #include <string>
 #include <any>
 #include <iostream>
+#include <vector>
 
 /**
  * @brief It is in the namespace tp::args and provides just two methods - parse_arguments, and arg
