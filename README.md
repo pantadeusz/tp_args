@@ -14,17 +14,19 @@ Code sample:
 #include <iostream>
 #include "tp_args.hpp"
 
-int main(int argc, char **argv) {
-    using namespace std;
-    using namespace tp::args;
-    auto arguments = parse_arguments(argc, argv, {{"height","int"}});
-    auto height = arg(arguments, "height",0);
-
-    std::cout <<"height " << height << std::endl;
+int main(int argc, char** argv) {
+	using namespace tp::args;
+	auto help = arg(argc, argv, "help", false);
+	auto x = arg(argc, argv,"x",10.0, "the x value");
+	if (help) std::cout << "help screen.." << std::endl;
+	std::cout << x << " " << help << std::endl;
+	args_info(std::cout);
+	return 0;
 }
+
 ```
 And you can execute compiled program with:
 
 ```bash
-./a.out height=1234
+./a.out -x 99 -help
 ```

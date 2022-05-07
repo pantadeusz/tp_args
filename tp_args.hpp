@@ -7,15 +7,13 @@
  *
  * @copyright Copyright (c) 2022
  *
- * This library allows for simple parsing arguments in the format: argname=argvalue. It only checks the first equal sign. For example: ./a.out myarg=itsvalue
- *
- * The types are allowed for arguments:
+ * This library allows for simple parsing arguments in the format: -argname argvalue. 
+ * 
  * @code {.c++ }
- * auto arguments = parse_arguments(argc, argv, {{"height","int"}});
- * auto height = arg(arguments, "height",0);
+ * auto help = arg(argc, argv, "help", false);
+ * auto x = arg(argc, argv,"x",10.0, "the x value");
  * @endcode
  * 
- * You can enable output stream for std::any by declaring TP_ARGS_ENABLE_OSTREAM_ANY before including this file
  */
 #ifndef __TP_ARGS_HPP____
 #define __TP_ARGS_HPP____
@@ -23,7 +21,8 @@
 #include <map>
 #include <string>
 #include <any>
-#include <iostream>
+#include <vector>
+
 
 /**
  * @brief It is in the namespace tp::args and provides just two methods - parse_arguments, and arg
@@ -32,63 +31,37 @@
 
 namespace tp::args
 {
-/**
- * @brief prepares arguments map.
- */
-auto parse_arguments = [](int argc, char **argv,
-const std::map<std::string,std::string> value_types ) -> std::map<std::string,std::any> {
+std::map<std::string,std::string> known_args;
+
+template<typename T>
+T arg (int argc, char** argv, std::string name, T default_value, std::string description = "") {
     using namespace std;
-    map<string,any> ret;
-    for (auto s : std::vector<std::string>(argv+1,argv+argc))
-    {
-        static const string delimiter = "=";
-        auto k = s.substr(0, s.find(delimiter));
-        auto v = s.erase(0, s.find(delimiter) + delimiter.length());
-        try {
-            if (value_types.at(k) == "int") ret[k] = stoi(v);
-            else if (value_types.at(k) == "unsigned")ret[k] = (unsigned)stoul(v);
-            else if (value_types.at(k) == "unsigned long")ret[k] = stoul(v);
-            else if (value_types.at(k) == "float")ret[k] = stof(v);
-            else if (value_types.at(k) == "double") ret[k] = stod(v);
-            else if (value_types.at(k) == "bool") ret[k] = bool((v=="true") || (v=="1") || (v=="yes"));
-            else ret[k] = v;
-        } catch (std::out_of_range &e) {
-            ret[k] = v;
-            std::cerr << "WARN: unknown argument or bad type for \"" << k << "\" with value \"" << v  << "\"" << std::endl;
+    any ret = default_value;
+    for (int i = 0; i < argc; i++) {
+        if ((std::string(argv[i]).substr(1) == name) && (argv[i][0] == '-')) {
+			std::string argument = (i<(argc-1))?argv[i+1]:"1";
+            if (std::is_same_v<T, bool>) { 
+				ret = (argument=="true") || (argument=="1") || (argument=="yes") || ((argument.size() > 0) && (argument[0] == '-'));
+			} else {
+				if (std::is_same_v<T, int>) ret = stoi(argument);
+				else if (std::is_same_v<T, double>) ret = stod( argument );
+				else if (std::is_same_v<T, unsigned>) ret = (unsigned)stoul( argument );
+				else if (std::is_same_v<T, unsigned long>) ret = stoul( argument );
+				else if (std::is_same_v<T, char>) ret = argument.at(0);
+				else ret = argument;
+			}
         }
     }
-    return ret;
+    known_args[name] = description;
+    return std::any_cast<T>(ret);
 };
 
-/**
- * @brief gets the value from arguments and allow for setting the default value and type is derived from this value.
- */
-auto arg = [](auto arguments, auto arg_name, auto defaultval)
-{
-    using namespace std;
-    return (arguments.count(arg_name))?any_cast<decltype(defaultval)>(arguments.at(arg_name)):defaultval;
+auto args_info = [](auto &o) {
+	for (auto [k,v] : known_args) {
+		o << " -" << k << "\t" << v << "\n";
+	}
 };
 }
 
-#ifdef TP_ARGS_ENABLE_OSTREAM_ANY
-std::ostream &operator<<(std::ostream &o, std::any value) {
-    using namespace std;
-
-    if (value.type() == typeid(int)) {
-        o << any_cast<int>(value);
-    } else if (value.type() == typeid(float)) {
-        o << any_cast<float>(value);
-    } else if (value.type() == typeid(double)) {
-        o << any_cast<double>(value);
-    } else if (value.type() == typeid(unsigned)) {
-        o << any_cast<unsigned>(value);
-    } else if (value.type() == typeid(bool)) {
-        o << (any_cast<bool>(value)?"true":"false");
-    } else if (value.type() == typeid(string)) {
-        o << any_cast<string>(value);
-    } else o << "<<UNKNOWN_TYPE>>";
-    return o;
-}
-#endif
 
 #endif
