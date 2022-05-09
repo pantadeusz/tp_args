@@ -56,8 +56,15 @@ T arg ( int argc, char** argv, std::string name, T default_value, std::string de
 };
 
 auto args_info = []( auto &o ) {
+	using namespace std;
+	#ifdef __TP_ARGS_MAX_ARG_NAME_LENGTH
+	const int max_arg_name_length = __TP_ARGS_MAX_ARG_NAME_LENGTH;
+	#else
+	const int max_arg_name_length = 12;
+	#endif
 	for ( auto [k, v] : known_args ) {
-		o << " -" << k << "\t" << v << "\n";
+
+		o << " -" << k << string(max((max_arg_name_length-(int)k.size())/4,1),'\t') << v << "\n";
 	}
 };
 }
