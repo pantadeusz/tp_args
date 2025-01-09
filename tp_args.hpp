@@ -39,7 +39,8 @@ namespace tp::args {
         using namespace std;
         any ret = default_value;
         for (int i = 0; i < argc; i++) {
-            if ((std::string(argv[i]).substr(1) == name) && (argv[i][0] == '-')) {
+		auto substringed = (std::string( argv[i] ).size()>0)?std::string( argv[i] ).substr( 1 ):std::string("");
+		if ( ( substringed == name ) && ( argv[i][0] == '-' ) ) {
                 std::string argument = (i < (argc - 1)) ? argv[i + 1] : "1";
                 if (std::is_same_v<T, bool>) {
                     ret = (argument == "true") || (argument == "1") || (argument == "yes") ||
